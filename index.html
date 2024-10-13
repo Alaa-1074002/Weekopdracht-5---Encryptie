@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opdracht 2 Week (5)</title>
+    <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        select,
+        textarea,
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Encryptie en Decryptie App</h1>
+
+    <label for="algorithm">Selecteer Algoritme</label>
+    <select id="algorithm" onchange="toonAlgoritmeInfo()">
+        <option value="" disabled selected>Kies Algoritme</option>
+        <option value="DES">DES</option>
+        <option value="AES">AES</option>
+        <option value="BLOWFISH">Blowfish</option>
+        <option value="VIGINER">Vigenère</option>
+        <option value="CASER">Caesar Cipher</option>
+    </select>
+
+    <p id="algorithmInfo"></p>
+
+    <label for="mode">Selecteer Modus</label>
+    <select id="mode" onchange="wijzigTekst()">
+        <option value="encrypt">Encrypt</option>
+        <option value="decrypt">Decrypt</option>
+    </select>
+
+    <label for="text">Invoertekst</label>
+    <textarea id="text" rows="4" placeholder="Voer de tekst in..."></textarea>
+
+    <label for="key">Sleutel</label>
+    <input type="text" id="key" placeholder="Voer sleutel in...">
+
+    <button onclick="verwerkTekst()">Verzenden</button>
+
+    <h3>Resultaat</h3>
+    <textarea id="result" rows="4" readonly></textarea>
+
+    <script>
+        function toonAlgoritmeInfo() {
+            const algorithm = document.getElementById('algorithm').value;
+            let info = '';
+            let mogelijkheden = 0;
+
+            switch (algorithm) {
+                case 'DES':
+                    info = 'DES is een symmetrisch sleutelalgoritme dat gegevens versleutelt in blokken van 64 bits met een 56-bits sleutel.';
+                    mogelijkheden = Math.pow(2, 56);
+                    break;
+                case 'AES':
+                    info = 'AES is een symmetrisch versleutelingsstandaard die werkt met 128-bits blokken en sleutels van 128, 192 of 256 bits ondersteunt.';
+                    mogelijkheden = Math.pow(2, 128);
+                    break;
+                case 'BLOWFISH':
+                    info = 'Blowfish is een symmetrisch blokcijfer met een variabele sleutel van 32 tot 448 bits.';
+                    mogelijkheden = Math.pow(2, 448);
+                    break;
+                case 'VIGINER':
+                    info = 'Het Vigenère-cijfer is een methode om tekst te versleutelen met behulp van polyalfabetische substitutie.';
+                    mogelijkheden = 'Afhankelijk van sleutelgrootte.';
+                    break;
+                case 'CASER':
+                    info = 'Caesar-cijfer is een eenvoudige versleutelingstechniek waarbij elke letter met een aantal posities wordt verschoven.';
+                    mogelijkheden = 26;
+                    break;
+                default:
+                    info = '';
+                    mogelijkheden = 0;
+            }
+
+            document.getElementById('algorithmInfo').innerHTML = `${info} <br><strong>Mogelijkheden:</strong> ${mogelijkheden}`;
+        }
+
+        function wijzigTekst() {
+            const mode = document.getElementById('mode').value;
+            const textArea = document.getElementById('text');
+
+            if (mode === 'decrypt') {
+                textArea.placeholder = 'Voer de versleutelde tekst in...';
+            } else {
+                textArea.placeholder = 'Voer de tekst in...';
+            }
+        }
+
+        function verwerkTekst() {
+            const algorithm = document.getElementById('algorithm').value;
+            const mode = document.getElementById('mode').value;
+            const text = document.getElementById('text').value;
+            const key = document.getElementById('key').value;
+            let resultaat = '';
+
+            if (!algorithm || !text || !key) {
+                alert('Vul alle velden in.');
+                return;
+            }
+
+            switch (algorithm) {
+                case 'DES':
+                    resultaat = mode === 'encrypt' ? CryptoJS.DES.encrypt(text, key).toString() : CryptoJS.DES.decrypt(text, key).toString(CryptoJS.enc.Utf8);
+                    break;
+                case 'AES':
+                    resultaat = mode === 'encrypt' ? CryptoJS.AES.encrypt(text, key).toString() : CryptoJS.AES.decrypt(text, key).toString(CryptoJS.enc.Utf8);
+                    break;
+                case 'BLOWFISH':
+                    resultaat = mode === 'encrypt' ? CryptoJS.Blowfish.encrypt(text, key).toString() : CryptoJS.Blowfish.decrypt(text, key).toString(CryptoJS.enc.Utf8);
+                    break;
+                case 'CASER':
+                    resultaat = caesarCipher(text, parseInt(key), mode === 'encrypt');
+                    break;
+                case 'VIGINER':
+                    resultaat = vigenereCipher(text, key, mode === 'encrypt');
+                    break;
+                default:
+                    resultaat = 'Ongeldig algoritme';
+            }
+
+            document.getElementById('result').value = resultaat;
+        }
+
+        function caesarCipher(str, shift, encrypt = true) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            // Hier pas de verschuiving aan voor ontsleuteling
+            shift = encrypt ? shift : -shift;
+
+            //Hier Verwerk de tekst door elk karakter te verschuiven
+            return str.toUpperCase().split('').map(char => {
+                const idx = alphabet.indexOf(char);
+                if (idx === -1) return char;
+
+                // Pas de Caesar versleuteling toe
+                return alphabet[(idx + shift + 26) % 26];
+            }).join('');
+        }
+        function vigenereCipher(str, key, encrypt = true) {
+            const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            str = str.toUpperCase();
+            key = key.toUpperCase();
+            let resultaat = '';
+            let keyIndex = 0;
+
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+                if (alphabet.indexOf(char) === -1) {
+                    resultaat += char;
+                    continue;
+                }
+
+                const keyChar = key[keyIndex % key.length];
+                const shift = alphabet.indexOf(keyChar);
+                const nieuweIndex = encrypt ? (alphabet.indexOf(char) + shift) % 26 : (alphabet.indexOf(char) - shift + 26) % 26;
+                resultaat += alphabet[nieuweIndex];
+                keyIndex++ // Verhoog de sleutelindex;
+            }
+
+            return resultaat;
+        }
+    </script>
+</body>
+
+</html>

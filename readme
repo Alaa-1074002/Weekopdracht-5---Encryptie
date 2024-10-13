@@ -1,0 +1,21 @@
+# Encryptie en Decryptie Web App Weekk 5 (opdracht 2)
+
+## Beschrijving
+Een eenvoudige webapplicatie om tekst te versleutelen en te ontsleutelen met behulp van populaire encryptiemethoden.
+
+## Ondersteunde Encryptie Algoritmes
+- **DES**: Symmetrisch algoritme met een 56-bits sleutel.
+- **AES**: Ondersteunt 128, 192, en 256-bits sleutels.
+- **Blowfish**: Variabele sleutels van 32 tot 448 bits.
+- **Vigenère**: Polyalfabetisch substitutiecijfer.
+- **Caesar Cipher**: Simpel verschuivingscijfer.
+
+## Gebruik
+1. Selecteer een algoritme.
+2. Kies versleutelen of ontsleutelen.
+3. Voer tekst en sleutel in.
+4. Klik op **Verzenden** voor het resultaat.
+
+## Installatie
+1. Clone of download de repository.
+2. Open `index.html` in een browser.
